@@ -4,12 +4,30 @@ import time
 import datetime
 import numpy as np
 
+program_version = "1.0.0"
 
 
 def main():
+    print("Welcome to Citadel Security!")
+    print(f"v{program_version}")
+    print("")
+    print("The program shows you a window with image from a connected webcam device.")
+    print("Press ESC to exit program | SPACE to save an image from camera.")
+    print("")
+
+    camera_w = input("Enter window width in pixels (leave empty for default 700px): ")
+    
+    if camera_w == "":
+        camera_w = 700
+    else:
+        camera_w = int(camera_w)
+
+  
+
+
 
     cam = cv2.VideoCapture(0)
-    window_name = 'CITADEL SECURITY'
+    window_name = f'CITADEL SECURITY v{program_version}'
     cv2.namedWindow(window_name)
 
     img_counter = 0
@@ -32,7 +50,7 @@ def main():
         
 
         # image, width = None, height = None, inter = cv2.INTER_AREA):
-        frame = image_resize(frame, width=700)
+        frame = image_resize(frame, width=camera_w)
         #frame = cv2.resize(frame, width=None, height=None, dst=None, fx=None, fy=None, interpolation=cv2.INTER_LINEAR)
 
         frame_h, frame_w, frame_channel = frame.shape
@@ -81,12 +99,14 @@ def main():
             break
         elif k%256 == 32:
             # SPACE pressed
-            img_name = "out/opencv_frame_{}.png".format(img_counter)
+            #img_name = "out/CitadelSec_{}.png".format(timestamp)
+            file_timestamp = get_file_name_timestamp()
+            img_name = "out/CitadelSecurity {}.jpg".format(file_timestamp)
             cv2.imwrite(img_name, frame)
             print("{} written!".format(img_name))
             img_counter += 1
 
-        time.sleep(0.3)  
+        time.sleep(0.5)  
 
     cam.release()
     cv2.destroyAllWindows()
@@ -98,6 +118,10 @@ def get_timestamp():
     stamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
     return stamp
 
+def get_file_name_timestamp():
+    stamp = get_timestamp()
+    stamp = stamp.replace(":", ".")
+    return stamp
 
 # https://stackoverflow.com/a/44659589
 def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
