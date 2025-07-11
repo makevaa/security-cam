@@ -2,13 +2,14 @@ import cv2
 from PIL import ImageFont, ImageDraw
 import time
 import datetime
+import numpy as np
 
 
 
 def main():
 
     cam = cv2.VideoCapture(0)
-    window_name = 'Talos Security'
+    window_name = 'CITADEL SECURITY'
     cv2.namedWindow(window_name)
 
     img_counter = 0
@@ -28,12 +29,42 @@ def main():
         if not ret:
             print("failed to grab frame")
             break
-
-        # Using cv2.putText() method
-        stamp = get_timestamp()
-        cv2.putText(frame, 'TALOS SEC [CAM 1]', (5, 30), font, fontScale, color, thickness, cv2.LINE_AA)
-        cv2.putText(frame, get_timestamp(), (5, 60), font, fontScale, color, thickness, cv2.LINE_AA)
         
+
+        # image, width = None, height = None, inter = cv2.INTER_AREA):
+        frame = image_resize(frame, width=1000)
+        #frame = cv2.resize(frame, width=None, height=None, dst=None, fx=None, fy=None, interpolation=cv2.INTER_LINEAR)
+
+        frame_h, frame_w, frame_channel = frame.shape
+
+        logo_image = cv2.imread('files/logo.png')
+        logo_image_w = 100
+        logo_image = image_resize(logo_image, width=logo_image_w)
+        logo_padding = 10
+ 
+
+        logo_pos_x = frame_w - logo_image_w - logo_padding
+        logo_pos_y = logo_padding
+ 
+        # Put logo image on top-right of frame
+        # replace values at coordinates (100, 100) to (399, 399) of img3 with region of img2
+        frame[logo_pos_y:logo_image_w+logo_padding, logo_pos_x:logo_pos_x+logo_image_w, :] = logo_image[0:logo_image_w, 0:logo_image_w, :]
+
+        alpha = 0.5
+        #img3 = np.uint8(frame*alpha + logo_image*(1-alpha))
+
+        #alpha = 0.5
+        #img3 = np.uint8(img1*alpha + img2*(1-alpha))
+
+        # Text overlays
+        timestamp = get_timestamp()
+        cv2.putText(frame, 'CITADEL SECURITY [CAM 1]', (frame_w-500, 30), font, fontScale, color, thickness, cv2.LINE_AA)
+        cv2.putText(frame, timestamp, (frame_w-500, 60), font, fontScale, color, thickness, cv2.LINE_AA)
+        
+
+        	
+        
+
         cv2.imshow(window_name, frame)
 
         k = cv2.waitKey(1)
@@ -61,6 +92,38 @@ def get_timestamp():
     stamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
     return stamp
 
+
+# https://stackoverflow.com/a/44659589
+def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
+    # initialize the dimensions of the image to be resized and
+    # grab the image size
+    dim = None
+    (h, w) = image.shape[:2]
+
+    # if both the width and height are None, then return the
+    # original image
+    if width is None and height is None:
+        return image
+
+    # check to see if the width is None
+    if width is None:
+        # calculate the ratio of the height and construct the
+        # dimensions
+        r = height / float(h)
+        dim = (int(w * r), height)
+
+    # otherwise, the height is None
+    else:
+        # calculate the ratio of the width and construct the
+        # dimensions
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    # resize the image
+    resized = cv2.resize(image, dim, interpolation = inter)
+
+    # return the resized image
+    return resized
 
 if __name__ == "__main__":
     main()
