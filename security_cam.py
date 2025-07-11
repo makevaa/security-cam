@@ -31,8 +31,8 @@ def main():
 
         # Using cv2.putText() method
         stamp = get_timestamp()
-        cv2.putText(frame, 'TALOS SEC <CAM 1>', (50, 50), font, fontScale, color, thickness, cv2.LINE_AA)
-        cv2.putText(frame, get_timestamp(), (50, 90), font, fontScale, color, thickness, cv2.LINE_AA)
+        cv2.putText(frame, 'TALOS SEC [CAM 1]', (5, 30), font, fontScale, color, thickness, cv2.LINE_AA)
+        cv2.putText(frame, get_timestamp(), (5, 60), font, fontScale, color, thickness, cv2.LINE_AA)
         
         cv2.imshow(window_name, frame)
 
