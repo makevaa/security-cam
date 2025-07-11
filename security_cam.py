@@ -32,15 +32,15 @@ def main():
         
 
         # image, width = None, height = None, inter = cv2.INTER_AREA):
-        frame = image_resize(frame, width=1000)
+        frame = image_resize(frame, width=700)
         #frame = cv2.resize(frame, width=None, height=None, dst=None, fx=None, fy=None, interpolation=cv2.INTER_LINEAR)
 
         frame_h, frame_w, frame_channel = frame.shape
 
         logo_image = cv2.imread('files/logo.png')
-        logo_image_w = 100
+        logo_image_w = 60
         logo_image = image_resize(logo_image, width=logo_image_w)
-        logo_padding = 10
+        logo_padding = 5
  
 
         logo_pos_x = frame_w - logo_image_w - logo_padding
@@ -57,9 +57,15 @@ def main():
         #img3 = np.uint8(img1*alpha + img2*(1-alpha))
 
         # Text overlays
+        # Draw text border with higher thickness
+        text_x = frame_w-425
+        text_y = 30
         timestamp = get_timestamp()
-        cv2.putText(frame, 'CITADEL SECURITY [CAM 1]', (frame_w-500, 30), font, fontScale, color, thickness, cv2.LINE_AA)
-        cv2.putText(frame, timestamp, (frame_w-500, 60), font, fontScale, color, thickness, cv2.LINE_AA)
+       
+        cv2.putText(frame, 'CITADEL SECURITY [CAM 1]', (text_x, text_y), font, fontScale, (0, 0, 0), thickness+5, cv2.LINE_AA) #border
+        cv2.putText(frame, 'CITADEL SECURITY [CAM 1]', (text_x, text_y), font, fontScale, color, thickness, cv2.LINE_AA)
+        cv2.putText(frame, timestamp, (text_x+45, text_y+30), font, fontScale, (0, 0, 0), thickness+5, cv2.LINE_AA) #border
+        cv2.putText(frame, timestamp, (text_x+45, text_y+30), font, fontScale, color, thickness, cv2.LINE_AA)
         
 
         	
