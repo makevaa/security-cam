@@ -1,35 +1,48 @@
 import cv2
-from PIL import ImageFont, ImageDraw
+from PIL import ImageFont
 import time
 import datetime
 import numpy as np
 
-program_version = "1.0.0"
 
 
 def main():
+    program_version = "1.0.1"
+
     print("Welcome to Citadel Security!")
-    print(f"v{program_version}")
-    print("")
-    print("The program shows you a window with image from a connected webcam device.")
-    print("Press ESC to exit program | SPACE to save an image from camera.")
-    print("")
+    print(f"v{program_version}\n")
+    print("The program shows user a window with image from a connected webcam device.\nThe optional image capture feature saves images to \"out\" folder at specified intervals.")
+    print("Press ESC to exit program | Press SPACE to save an image from camera.")
 
-    camera_w = input("[Optional] Enter window width in pixels (leave empty for default 700): ")
+
+    camera_w = input("\n[Optional] Enter image width in pixels (leave empty for camera default): ").strip()
+    camera_w = camera_w.strip()
     
-    
-    if camera_w == "":
-        camera_w = 700
-    else:
+    if camera_w != "":
+        print(f"--> Set image width to {camera_w}px")
         camera_w = int(camera_w)
+    else:
+        print(f"--> Set image width to camera default")
+        camera_w = 0
+ 
 
 
-    capture_interval = input("[Optional] Enter image capture interval in seconds (leave empty to disable image capture): ")
-
+    capture_interval = input("\n[Optional] Enter image capture interval in seconds (leave empty to disable image capture): ").strip()
+ 
     if capture_interval == "":
         capture_interval = 0
+        print(f"--> Disabled image capture")
     else:
+        print(f"--> Set capture interval to {capture_interval} seconds")
         capture_interval = int(capture_interval)
+
+    preview_disabled = False
+    preview_disabled_input = input('\n[Optional] Disable video preview on window? (preview is on by default, enter "y" to disable it): ').strip()
+    if (preview_disabled_input == "y"):
+        preview_disabled = True
+        print(f"--> Video preview disabled")
+    else:
+        print(f"--> Video preview enabled")
 
 
     cam = cv2.VideoCapture(0)
@@ -40,15 +53,13 @@ def main():
     # Font stuff for overlay
     font = cv2.FONT_HERSHEY_SIMPLEX
     monospace = ImageFont.truetype("files/font/SourceCodePro-Regular.ttf",32)
-    #font = monospace
-    org = (50, 50) #text position
     fontScale = 0.8
     color = (0, 255, 0)
     thickness = 2
 
-    start_time = time.monotonic()
-    last_capture = start_time
+    last_capture = 0
 
+    print("\nMonitoring...")
 
     while True:
         ret, frame = cam.read()
@@ -56,60 +67,50 @@ def main():
             print("failed to grab frame")
             break
         
-
-        # image, width = None, height = None, inter = cv2.INTER_AREA):
-        frame = image_resize(frame, width=camera_w)
-        #frame = cv2.resize(frame, width=None, height=None, dst=None, fx=None, fy=None, interpolation=cv2.INTER_LINEAR)
-
+        if (camera_w > 0):
+            frame = image_resize(frame, width=camera_w)
+      
         frame_h, frame_w, frame_channel = frame.shape
 
-        logo_image = cv2.imread('files/logo.png')
+        logo_image = cv2.imread('files/logo.png', cv2.IMREAD_UNCHANGED)
         logo_image_w = 60
         logo_image = image_resize(logo_image, width=logo_image_w)
-        logo_padding = 5
- 
+        logo_padding_x = 10
+        logo_padding_y = 5 
+        logo_pos_x = frame_w - logo_image_w - logo_padding_x
+        logo_pos_y = logo_padding_y
 
-        logo_pos_x = frame_w - logo_image_w - logo_padding
-        logo_pos_y = logo_padding
- 
         # Put logo image on top-right of frame
-        # replace values at coordinates (100, 100) to (399, 399) of img3 with region of img2
-        frame[logo_pos_y:logo_image_w+logo_padding, logo_pos_x:logo_pos_x+logo_image_w, :] = logo_image[0:logo_image_w, 0:logo_image_w, :]
+        add_transparent_image(frame, logo_image, logo_pos_x, logo_pos_y)
 
-        alpha = 0.5
-        #img3 = np.uint8(frame*alpha + logo_image*(1-alpha))
-
-        #alpha = 0.5
-        #img3 = np.uint8(img1*alpha + img2*(1-alpha))
 
         # Text overlays
-        # Draw text border with higher thickness
+        # Draw text border using 2nd texts with higher thickness and black color
+        text_overlay_title = "CITADEL SECURITY [CAM 1]"
         text_x = frame_w-425
         text_y = 30
         timestamp = get_timestamp()
        
-        cv2.putText(frame, 'CITADEL SECURITY [CAM 1]', (text_x, text_y), font, fontScale, (0, 0, 0), thickness+5, cv2.LINE_AA) #border
-        cv2.putText(frame, 'CITADEL SECURITY [CAM 1]', (text_x, text_y), font, fontScale, color, thickness, cv2.LINE_AA)
-        cv2.putText(frame, timestamp, (text_x+45, text_y+30), font, fontScale, (0, 0, 0), thickness+5, cv2.LINE_AA) #border
+        cv2.putText(frame, text_overlay_title, (text_x, text_y), font, fontScale, (0, 0, 0), thickness+3, cv2.LINE_AA) #border
+        cv2.putText(frame, text_overlay_title, (text_x, text_y), font, fontScale, color, thickness, cv2.LINE_AA)
+        cv2.putText(frame, timestamp, (text_x+45, text_y+30), font, fontScale, (0, 0, 0), thickness+3, cv2.LINE_AA) #border
         cv2.putText(frame, timestamp, (text_x+45, text_y+30), font, fontScale, color, thickness, cv2.LINE_AA)
         
+        if preview_disabled == False:
+            cv2.imshow(window_name, frame)
 
-        cv2.imshow(window_name, frame)
+        key = cv2.waitKey(1)
 
-        k = cv2.waitKey(1)
-
-        if k%256 == 27:
+        if key%256 == 27:
             # ESC pressed
             print("Escape hit, closing...")
             break
-        elif k%256 == 32:
+        elif key%256 == 32:
             # SPACE pressed
             save_image(frame)
 
-        #print(time.monotonic() )
-
-        #time.sleep(60.0 - ((time.monotonic() - starttime) % 60.0))
-        if ( capture_interval > 0 and time.monotonic() - last_capture >= capture_interval):
+        # Save images periodically if capture is enabled
+        if (capture_interval > 0 and time.monotonic() - last_capture >= capture_interval):
             last_capture = time.monotonic()
             save_image(frame)
         
@@ -118,6 +119,7 @@ def main():
 
     cam.release()
     cv2.destroyAllWindows()
+
 
 def save_image(frame):
     file_timestamp = get_file_name_timestamp()
@@ -131,12 +133,14 @@ def get_timestamp():
     stamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
     return stamp
 
+
 def get_file_name_timestamp():
     stamp = get_timestamp()
     stamp = stamp.replace(":", ".")
     return stamp
 
-# https://stackoverflow.com/a/44659589
+
+# image_resize function by thewaywewere: https://stackoverflow.com/a/44659589
 def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
     # initialize the dimensions of the image to be resized and
     # grab the image size
@@ -168,6 +172,44 @@ def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
     # return the resized image
     return resized
 
+
+# add_transparent_image function by Ben: https://stackoverflow.com/a/71701023
+def add_transparent_image(background, foreground, x_offset=None, y_offset=None):
+    bg_h, bg_w, bg_channels = background.shape
+    fg_h, fg_w, fg_channels = foreground.shape
+
+    assert bg_channels == 3, f'background image should have exactly 3 channels (RGB). found:{bg_channels}'
+    assert fg_channels == 4, f'foreground image should have exactly 4 channels (RGBA). found:{fg_channels}'
+
+    # center by default
+    if x_offset is None: x_offset = (bg_w - fg_w) // 2
+    if y_offset is None: y_offset = (bg_h - fg_h) // 2
+
+    w = min(fg_w, bg_w, fg_w + x_offset, bg_w - x_offset)
+    h = min(fg_h, bg_h, fg_h + y_offset, bg_h - y_offset)
+
+    if w < 1 or h < 1: return
+
+    # clip foreground and background images to the overlapping regions
+    bg_x = max(0, x_offset)
+    bg_y = max(0, y_offset)
+    fg_x = max(0, x_offset * -1)
+    fg_y = max(0, y_offset * -1)
+    foreground = foreground[fg_y:fg_y + h, fg_x:fg_x + w]
+    background_subsection = background[bg_y:bg_y + h, bg_x:bg_x + w]
+
+    # separate alpha and color channels from the foreground image
+    foreground_colors = foreground[:, :, :3]
+    alpha_channel = foreground[:, :, 3] / 255  # 0-255 => 0.0-1.0
+
+    # construct an alpha_mask that matches the image shape
+    alpha_mask = alpha_channel[:, :, np.newaxis]
+
+    # combine the background with the overlay image weighted by alpha
+    composite = background_subsection * (1 - alpha_mask) + foreground_colors * alpha_mask
+
+    # overwrite the section of the background image that has been updated
+    background[bg_y:bg_y + h, bg_x:bg_x + w] = composite
 
 if __name__ == "__main__":
     main()
