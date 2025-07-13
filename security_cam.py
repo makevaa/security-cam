@@ -15,22 +15,27 @@ def main():
     print("Press ESC to exit program | SPACE to save an image from camera.")
     print("")
 
-    camera_w = input("Enter window width in pixels (leave empty for default 700px): ")
+    camera_w = input("[Optional] Enter window width in pixels (leave empty for default 700): ")
+    
     
     if camera_w == "":
         camera_w = 700
     else:
         camera_w = int(camera_w)
 
-  
 
+    capture_interval = input("[Optional] Enter image capture interval in seconds (leave empty to disable image capture): ")
+
+    if capture_interval == "":
+        capture_interval = 0
+    else:
+        capture_interval = int(capture_interval)
 
 
     cam = cv2.VideoCapture(0)
     window_name = f'CITADEL SECURITY v{program_version}'
     cv2.namedWindow(window_name)
 
-    img_counter = 0
     
     # Font stuff for overlay
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -40,6 +45,9 @@ def main():
     fontScale = 0.8
     color = (0, 255, 0)
     thickness = 2
+
+    start_time = time.monotonic()
+    last_capture = start_time
 
 
     while True:
@@ -86,9 +94,6 @@ def main():
         cv2.putText(frame, timestamp, (text_x+45, text_y+30), font, fontScale, color, thickness, cv2.LINE_AA)
         
 
-        	
-        
-
         cv2.imshow(window_name, frame)
 
         k = cv2.waitKey(1)
@@ -99,18 +104,26 @@ def main():
             break
         elif k%256 == 32:
             # SPACE pressed
-            #img_name = "out/CitadelSec_{}.png".format(timestamp)
-            file_timestamp = get_file_name_timestamp()
-            img_name = "out/CitadelSecurity {}.jpg".format(file_timestamp)
-            cv2.imwrite(img_name, frame)
-            print("{} written!".format(img_name))
-            img_counter += 1
+            save_image(frame)
 
+        #print(time.monotonic() )
+
+        #time.sleep(60.0 - ((time.monotonic() - starttime) % 60.0))
+        if ( capture_interval > 0 and time.monotonic() - last_capture >= capture_interval):
+            last_capture = time.monotonic()
+            save_image(frame)
+        
+           
         time.sleep(0.5)  
 
     cam.release()
     cv2.destroyAllWindows()
 
+def save_image(frame):
+    file_timestamp = get_file_name_timestamp()
+    img_name = "out/CitadelSecurity {}.jpg".format(file_timestamp)
+    cv2.imwrite(img_name, frame)
+    print("{} written!".format(img_name))
 
 
 def get_timestamp():
@@ -155,6 +168,6 @@ def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
     # return the resized image
     return resized
 
+
 if __name__ == "__main__":
     main()
-
