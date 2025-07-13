@@ -8,6 +8,7 @@ import numpy as np
 
 def main():
     program_version = "1.0.1"
+    window_name = f'Citadel Security preview'
 
     print("Welcome to Citadel Security!")
     print(f"v{program_version}\n")
@@ -36,26 +37,38 @@ def main():
         print(f"--> Set capture interval to {capture_interval} seconds")
         capture_interval = int(capture_interval)
 
+  
+
     preview_disabled = False
-    preview_disabled_input = input('\n[Optional] Disable video preview on window? (preview is on by default, enter "y" to disable it): ').strip()
-    if (preview_disabled_input == "y"):
+    preview_disabled_input = input('\n[Optional] Disable video preview window? (preview is on by default, enter "y" to disable it): ').strip()
+    if (preview_disabled_input.lower() == "y"):
         preview_disabled = True
         print(f"--> Video preview disabled")
     else:
         print(f"--> Video preview enabled")
+        cv2.namedWindow(window_name)
 
 
     cam = cv2.VideoCapture(0)
-    window_name = f'CITADEL SECURITY v{program_version}'
-    cv2.namedWindow(window_name)
 
-    
+   
     # Font stuff for overlay
     font = cv2.FONT_HERSHEY_SIMPLEX
     monospace = ImageFont.truetype("files/font/SourceCodePro-Regular.ttf",32)
     fontScale = 0.8
     color = (0, 255, 0)
     thickness = 2
+    text_overlay_title = "CITADEL SECURITY [CAM 1]"
+
+    # Logo stuff for overlay
+    logo_image = cv2.imread('logo.png', cv2.IMREAD_UNCHANGED)
+    logo_image_w = 60
+    logo_image = image_resize(logo_image, width=logo_image_w)
+    logo_padding_x = 10
+    logo_padding_y = 5 
+    logo_pos_x = frame_w - logo_image_w - logo_padding_x
+    logo_pos_y = logo_padding_y
+
 
     last_capture = 0
 
@@ -72,13 +85,7 @@ def main():
       
         frame_h, frame_w, frame_channel = frame.shape
 
-        logo_image = cv2.imread('files/logo.png', cv2.IMREAD_UNCHANGED)
-        logo_image_w = 60
-        logo_image = image_resize(logo_image, width=logo_image_w)
-        logo_padding_x = 10
-        logo_padding_y = 5 
-        logo_pos_x = frame_w - logo_image_w - logo_padding_x
-        logo_pos_y = logo_padding_y
+       
 
         # Put logo image on top-right of frame
         add_transparent_image(frame, logo_image, logo_pos_x, logo_pos_y)
@@ -86,7 +93,7 @@ def main():
 
         # Text overlays
         # Draw text border using 2nd texts with higher thickness and black color
-        text_overlay_title = "CITADEL SECURITY [CAM 1]"
+     
         text_x = frame_w-425
         text_y = 30
         timestamp = get_timestamp()
