@@ -3,7 +3,7 @@ from PIL import ImageFont
 import time
 import datetime
 import numpy as np
-
+import os
 
 
 def main():
@@ -54,7 +54,6 @@ def main():
    
     # Font stuff for overlay
     font = cv2.FONT_HERSHEY_SIMPLEX
-    monospace = ImageFont.truetype("files/font/SourceCodePro-Regular.ttf",32)
     fontScale = 0.8
     color = (0, 255, 0)
     thickness = 2
@@ -66,10 +65,13 @@ def main():
     logo_image = image_resize(logo_image, width=logo_image_w)
     logo_padding_x = 10
     logo_padding_y = 5 
-    logo_pos_x = frame_w - logo_image_w - logo_padding_x
     logo_pos_y = logo_padding_y
 
 
+    # Create "out" folder if it doesn't exists
+    directory = "out"
+    os.makedirs(directory, exist_ok = True)
+    
     last_capture = 0
 
     print("\nMonitoring...")
@@ -85,9 +87,9 @@ def main():
       
         frame_h, frame_w, frame_channel = frame.shape
 
-       
-
+    
         # Put logo image on top-right of frame
+        logo_pos_x = frame_w - logo_image_w - logo_padding_x
         add_transparent_image(frame, logo_image, logo_pos_x, logo_pos_y)
 
 
