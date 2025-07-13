@@ -125,7 +125,7 @@ def save_image(frame):
     file_timestamp = get_file_name_timestamp()
     img_name = "out/CitadelSecurity {}.jpg".format(file_timestamp)
     cv2.imwrite(img_name, frame)
-    print("{} written!".format(img_name))
+    print("{} written".format(img_name))
 
 
 def get_timestamp():
