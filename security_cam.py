@@ -36,6 +36,7 @@ def main():
     else:
         print(f"--> Set capture interval to {capture_interval} seconds")
         capture_interval = int(capture_interval)
+        
 
   
 
@@ -95,7 +96,6 @@ def main():
 
         # Text overlays
         # Draw text border using 2nd texts with higher thickness and black color
-     
         text_x = frame_w-425
         text_y = 30
         timestamp = get_timestamp()
@@ -121,7 +121,9 @@ def main():
         # Save images periodically if capture is enabled
         if (capture_interval > 0 and time.monotonic() - last_capture >= capture_interval):
             last_capture = time.monotonic()
-            save_image(frame)
+            target_directory = f"out/{get_datestamp()}"
+            os.makedirs(target_directory, exist_ok = True)
+            save_image(frame, target_directory)
         
            
         time.sleep(0.5)  
@@ -130,9 +132,9 @@ def main():
     cv2.destroyAllWindows()
 
 
-def save_image(frame):
+def save_image(frame, target_directory):
     file_timestamp = get_file_name_timestamp()
-    img_name = "out/CitadelSecurity {}.jpg".format(file_timestamp)
+    img_name = f"{target_directory}/CitadelSecurity {file_timestamp}.jpg"
     cv2.imwrite(img_name, frame)
     print("{} written".format(img_name))
 
@@ -146,6 +148,11 @@ def get_timestamp():
 def get_file_name_timestamp():
     stamp = get_timestamp()
     stamp = stamp.replace(":", ".")
+    return stamp
+
+def get_datestamp():
+    ts = time.time()
+    stamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
     return stamp
 
 
